@@ -20,3 +20,28 @@
   - `POST /api/assistant` for RAG answers.
   - `GET /health` for healthcheck.
 
+## Railway deploy
+
+Repository is ready for Railway Docker deploy:
+
+- `Dockerfile`
+- `.dockerignore`
+- `railway.json` (healthcheck: `/health`)
+
+Set these Railway Variables:
+
+- `OPENAI_API_KEY`
+- `QDRANT_URL`
+- `QDRANT_API_KEY`
+- `QDRANT_COLLECTION`
+
+Optional variables:
+
+- `OPENAI_CHAT_MODEL` (default: `gpt-4o-mini`)
+- `EMBED_MODEL` (default: `text-embedding-3-large`)
+- `RAG_TOP_K` (default: `6`)
+- `RAG_SNIPPET_CHARS` (default: `700`)
+
+Railway provides `PORT` automatically. App starts with:
+
+`uvicorn backend.app:app --host 0.0.0.0 --port ${PORT}`
