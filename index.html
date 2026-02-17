@@ -137,46 +137,55 @@
         }
 
         .search-container {
-            max-width: 760px;
+            max-width: 500px;
             margin-bottom: 30px;
         }
 
-        .search-prompt-form {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .ai-search-wrap {
+            position: relative;
         }
 
         .search-input {
             width: 100%;
-            padding: 13px 14px;
-            border: 1px solid #c8cfdd;
-            border-radius: 10px;
-            font-size: 15px;
-            background: #fff;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #d32f2f;
-            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
-        }
-
-        .search-ai-btn {
-            border: 0;
-            border-radius: 10px;
-            background: #d32f2f;
-            color: #fff;
-            font-weight: 600;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
             font-size: 14px;
-            padding: 12px 16px;
-            white-space: nowrap;
-            cursor: pointer;
         }
 
-        .search-ai-btn:hover {
-            background: #bf2929;
+        .ai-search-wrap .search-input {
+            padding-right: 92px;
+            border-color: #c7cedb;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .ai-search-wrap .search-input:focus {
+            outline: none;
+            border-color: #4a9eff;
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.14);
+        }
+
+        .ai-search-badge {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.15px;
+            color: #2f66b3;
+            background: rgba(74, 158, 255, 0.12);
+            border: 1px solid rgba(74, 158, 255, 0.38);
+            border-radius: 999px;
+            padding: 2px 8px;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .ai-search-wrap:focus-within .ai-search-badge {
+            color: #1f56a4;
+            background: rgba(74, 158, 255, 0.18);
+            border-color: rgba(74, 158, 255, 0.56);
         }
 
         .info-banner {
@@ -528,15 +537,6 @@
             .ai-msg {
                 max-width: 100%;
             }
-
-            .search-prompt-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-ai-btn {
-                width: 100%;
-            }
         }
     </style>
 </head>
@@ -595,10 +595,10 @@
         </div>
 
         <div class="search-container">
-            <form id="mainPromptlineForm" class="search-prompt-form">
-                <input type="text" id="mainPromptlineInput" class="search-input" placeholder="Спросите ИИ по документации Рутокен">
-                <button type="submit" class="search-ai-btn">Спросить ИИ</button>
-            </form>
+            <div class="ai-search-wrap">
+                <input type="text" id="mainPromptlineInput" class="search-input" placeholder="🔍">
+                <span class="ai-search-badge">AI поиск</span>
+            </div>
         </div>
 
         <div class="info-banner">
@@ -702,7 +702,6 @@
             const form = document.getElementById('aiAssistantForm');
             const input = document.getElementById('aiAssistantInput');
             const submitBtn = document.getElementById('aiAssistantSubmit');
-            const mainPromptlineForm = document.getElementById('mainPromptlineForm');
             const mainPromptlineInput = document.getElementById('mainPromptlineInput');
 
             const state = {
@@ -834,15 +833,19 @@
                 }
             };
 
-            if (mainPromptlineForm && mainPromptlineInput) {
-                mainPromptlineForm.addEventListener('submit', function (e) {
+            if (mainPromptlineInput) {
+                mainPromptlineInput.addEventListener('keydown', function (e) {
+                    if (e.key !== 'Enter') {
+                        return;
+                    }
                     e.preventDefault();
                     const q = mainPromptlineInput.value.trim();
+                    if (!q) {
+                        return;
+                    }
                     openAssistant(q);
                     mainPromptlineInput.value = '';
-                    if (q) {
-                        askAssistant(q);
-                    }
+                    askAssistant(q);
                 });
             }
 
