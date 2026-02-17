@@ -140,6 +140,7 @@
             width: 100%;
             max-width: none;
             margin-bottom: 30px;
+            clear: both;
         }
 
         .ai-search-wrap {
@@ -187,6 +188,30 @@
             color: #1f56a4;
             background: rgba(74, 158, 255, 0.18);
             border-color: rgba(74, 158, 255, 0.56);
+        }
+
+        .ai-query-suggestions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ai-query-chip {
+            border: 1px solid #d3d9e5;
+            border-radius: 999px;
+            background: #f7faff;
+            color: #2b4b78;
+            font-size: 12px;
+            line-height: 1.2;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .ai-query-chip:hover {
+            border-color: #4a9eff;
+            background: #eef5ff;
+            color: #1e4f99;
         }
 
         .info-banner {
@@ -433,26 +458,137 @@
             gap: 6px;
         }
 
-        .ai-source-item {
-            border: 1px solid #d8deea;
-            border-radius: 8px;
-            padding: 8px;
-            background: #fbfcff;
+        .ai-source-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
-        .ai-source-title {
-            font-weight: 600;
-            color: #153567;
+        .ai-source-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            border: 1px solid #cfdae8;
+            background: #fbfdff;
+            color: #1f4f8d;
+            font-size: 12px;
+            font-weight: 500;
             text-decoration: none;
+            padding: 4px 10px;
+            line-height: 1.2;
         }
 
-        .ai-source-title:hover {
-            text-decoration: underline;
+        .ai-source-pill:hover {
+            border-color: #4a9eff;
+            color: #1f56a4;
+            background: #f1f7ff;
         }
 
-        .ai-source-meta {
-            color: #6b748a;
-            margin-top: 3px;
+        .ai-followups {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ai-followup-btn {
+            border: 1px solid #d2d8e5;
+            background: #fff;
+            color: #32425f;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .ai-followup-btn:hover {
+            border-color: #4a9eff;
+            color: #1f56a4;
+            background: #f5f9ff;
+        }
+
+        .ai-feedback {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .ai-feedback-btn {
+            border: 1px solid #d0d6e3;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 12px;
+            padding: 4px 8px;
+            cursor: pointer;
+            color: #32425f;
+        }
+
+        .ai-feedback-btn:hover {
+            border-color: #4a9eff;
+            color: #1f56a4;
+        }
+
+        .ai-feedback-btn[disabled] {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .ai-feedback-note {
+            color: #60708c;
+            font-size: 12px;
+        }
+
+        .ai-welcome {
+            background: #fff;
+            border: 1px solid #e0e5f1;
+            border-radius: 12px;
+            padding: 14px;
+            color: #26344d;
+        }
+
+        .ai-welcome-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .ai-welcome-subtitle {
+            color: #5d6a83;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .ai-welcome-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ai-welcome-chip {
+            border: 1px solid #d2d8e6;
+            border-radius: 999px;
+            background: #f9fbff;
+            color: #254978;
+            font-size: 12px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .ai-welcome-chip:hover {
+            border-color: #4a9eff;
+            background: #eff6ff;
+        }
+
+        .ai-stream-caret {
+            display: inline-block;
+            width: 8px;
+            margin-left: 2px;
+            color: #7d8aa4;
+            animation: aiCaretBlink 1s steps(1) infinite;
+        }
+
+        @keyframes aiCaretBlink {
+            50% { opacity: 0; }
         }
 
         .ai-assistant-composer {
@@ -600,6 +736,12 @@
                 <input type="text" id="mainPromptlineInput" class="search-input" placeholder="🔍">
                 <span class="ai-search-badge">AI поиск</span>
             </div>
+            <div class="ai-query-suggestions" id="aiQuerySuggestions">
+                <button type="button" class="ai-query-chip">Как настроить Apache как reverse proxy для KeyBox?</button>
+                <button type="button" class="ai-query-chip">Что делать при CKR_PIN_LOCKED?</button>
+                <button type="button" class="ai-query-chip">Как выпустить TPM Virtual Smart Card?</button>
+                <button type="button" class="ai-query-chip">Какие шаги для настройки NGINX?</button>
+            </div>
         </div>
 
         <div class="info-banner">
@@ -704,6 +846,7 @@
             const input = document.getElementById('aiAssistantInput');
             const submitBtn = document.getElementById('aiAssistantSubmit');
             const mainPromptlineInput = document.getElementById('mainPromptlineInput');
+            const aiQuerySuggestions = document.getElementById('aiQuerySuggestions');
 
             const state = {
                 busy: false,
@@ -719,87 +862,248 @@
                 .replaceAll('"', '&quot;')
                 .replaceAll("'", '&#39;');
 
-            const appendMessage = (role, text, sources) => {
-                const wrap = document.createElement('div');
-                wrap.className = 'ai-msg ' + (role === 'user' ? 'ai-msg-user' : 'ai-msg-assistant');
+            const removeWelcome = () => {
+                const w = document.getElementById('aiWelcomeState');
+                if (w) {
+                    w.remove();
+                }
+            };
 
+            const renderWelcome = () => {
+                if (chatLog.children.length) {
+                    return;
+                }
+                const examples = [
+                    'Как настроить Apache как reverse proxy для KeyBox?',
+                    'Как инициализировать токен в Linux?',
+                    'Что делать при CKR_PIN_LOCKED?',
+                    'Какие модели Рутокен поддерживают ГОСТ?'
+                ];
+                const wrap = document.createElement('div');
+                wrap.id = 'aiWelcomeState';
+                wrap.className = 'ai-welcome';
+                wrap.innerHTML = `
+                    <div class="ai-welcome-title">AI-помощник Рутокен</div>
+                    <div class="ai-welcome-subtitle">Задайте вопрос по документации. Я отвечаю с ссылками на источники.</div>
+                    <div class="ai-welcome-list"></div>
+                `;
+                const list = wrap.querySelector('.ai-welcome-list');
+                examples.forEach((q) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'ai-welcome-chip';
+                    btn.textContent = q;
+                    btn.addEventListener('click', () => {
+                        input.value = q;
+                        askAssistant(q);
+                    });
+                    list.appendChild(btn);
+                });
+                chatLog.appendChild(wrap);
+            };
+
+            const appendUserMessage = (text) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'ai-msg ai-msg-user';
                 const body = document.createElement('div');
                 body.innerHTML = escapeHtml(text).replaceAll('\n', '<br>');
                 wrap.appendChild(body);
-
-                if (role === 'assistant' && Array.isArray(sources) && sources.length) {
-                    const meta = document.createElement('div');
-                    meta.className = 'ai-msg-meta';
-                    sources.slice(0, 4).forEach((src, idx) => {
-                        const item = document.createElement('div');
-                        item.className = 'ai-source-item';
-
-                        const title = document.createElement(src.url ? 'a' : 'div');
-                        title.className = 'ai-source-title';
-                        title.textContent = `S${idx + 1}: ${src.title || 'Источник'}`;
-                        if (src.url) {
-                            title.href = src.url;
-                            title.target = '_blank';
-                            title.rel = 'noopener noreferrer';
-                        }
-
-                        const metaText = document.createElement('div');
-                        metaText.className = 'ai-source-meta';
-                        const section = src.section ? ` | ${src.section}` : '';
-                        metaText.textContent = `score ${Number(src.score || 0).toFixed(3)}${section}`;
-
-                        item.appendChild(title);
-                        item.appendChild(metaText);
-                        meta.appendChild(item);
-                    });
-                    wrap.appendChild(meta);
-                }
-
                 chatLog.appendChild(wrap);
                 chatLog.scrollTop = chatLog.scrollHeight;
             };
 
-            const makeLoader = () => {
+            const createAssistantMessage = () => {
                 const wrap = document.createElement('div');
                 wrap.className = 'ai-msg ai-msg-assistant';
-                wrap.id = 'aiPendingMessage';
-                wrap.innerHTML = '<div class="ai-loader"><span class="ai-loader-dot"></span><span class="ai-loader-dot"></span><span class="ai-loader-dot"></span></div>';
-                return wrap;
+
+                const body = document.createElement('div');
+                body.className = 'ai-msg-text';
+                wrap.appendChild(body);
+
+                const meta = document.createElement('div');
+                meta.className = 'ai-msg-meta';
+                wrap.appendChild(meta);
+
+                chatLog.appendChild(wrap);
+                chatLog.scrollTop = chatLog.scrollHeight;
+
+                return {
+                    wrap,
+                    body,
+                    meta,
+                };
+            };
+
+            const setAssistantText = (node, text, streaming) => {
+                node.innerHTML = escapeHtml(text || '').replaceAll('\n', '<br>');
+                if (streaming) {
+                    const caret = document.createElement('span');
+                    caret.className = 'ai-stream-caret';
+                    caret.textContent = '|';
+                    node.appendChild(caret);
+                }
+            };
+
+            const renderSources = (container, sources) => {
+                if (!Array.isArray(sources) || !sources.length) {
+                    return;
+                }
+                const title = document.createElement('div');
+                title.textContent = 'Источники:';
+                container.appendChild(title);
+
+                const list = document.createElement('div');
+                list.className = 'ai-source-list';
+                sources.slice(0, 6).forEach((src) => {
+                    const pill = document.createElement(src.url ? 'a' : 'span');
+                    pill.className = 'ai-source-pill';
+                    pill.textContent = `📄 ${src.title || 'Источник'}`;
+                    if (src.url) {
+                        pill.href = src.url;
+                        pill.target = '_blank';
+                        pill.rel = 'noopener noreferrer';
+                    }
+                    list.appendChild(pill);
+                });
+                container.appendChild(list);
+            };
+
+            const renderFollowups = (container, items) => {
+                if (!Array.isArray(items) || !items.length) {
+                    return;
+                }
+                const title = document.createElement('div');
+                title.textContent = 'Уточнить:';
+                container.appendChild(title);
+
+                const list = document.createElement('div');
+                list.className = 'ai-followups';
+                items.slice(0, 4).forEach((q) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'ai-followup-btn';
+                    btn.textContent = q;
+                    btn.addEventListener('click', () => {
+                        input.value = q;
+                        askAssistant(q);
+                    });
+                    list.appendChild(btn);
+                });
+                container.appendChild(list);
+            };
+
+            const sendFeedback = async (answerId, vote, question, answer, note, upBtn, downBtn) => {
+                try {
+                    await fetch('/api/assistant/feedback', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            answer_id: answerId,
+                            vote,
+                            question,
+                            answer,
+                        }),
+                    });
+                    note.textContent = 'Спасибо за отзыв';
+                    upBtn.disabled = true;
+                    downBtn.disabled = true;
+                } catch (e) {
+                    note.textContent = 'Не удалось отправить отзыв';
+                }
+            };
+
+            const renderFeedback = (container, answerId, question, answer) => {
+                if (!answerId) {
+                    return;
+                }
+                const row = document.createElement('div');
+                row.className = 'ai-feedback';
+
+                const upBtn = document.createElement('button');
+                upBtn.type = 'button';
+                upBtn.className = 'ai-feedback-btn';
+                upBtn.textContent = '👍';
+
+                const downBtn = document.createElement('button');
+                downBtn.type = 'button';
+                downBtn.className = 'ai-feedback-btn';
+                downBtn.textContent = '👎';
+
+                const note = document.createElement('span');
+                note.className = 'ai-feedback-note';
+                note.textContent = 'Оцените ответ';
+
+                upBtn.addEventListener('click', () => sendFeedback(answerId, 'up', question, answer, note, upBtn, downBtn));
+                downBtn.addEventListener('click', () => sendFeedback(answerId, 'down', question, answer, note, upBtn, downBtn));
+
+                row.appendChild(upBtn);
+                row.appendChild(downBtn);
+                row.appendChild(note);
+                container.appendChild(row);
             };
 
             const openAssistant = (prefill) => {
                 overlay.hidden = false;
-                if (!chatLog.children.length) {
-                    appendMessage('assistant', 'Здравствуйте. Я помогу найти ответ в документации Рутокен. Сформулируйте вопрос максимально конкретно.', []);
-                }
+                renderWelcome();
                 if (prefill) {
                     input.value = prefill;
                 }
                 setTimeout(() => input.focus(), 0);
             };
 
+            const runQuery = (question) => {
+                const q = (question || '').trim();
+                if (!q) {
+                    return;
+                }
+                openAssistant(q);
+                askAssistant(q);
+            };
+
             const closeAssistant = () => {
                 overlay.hidden = true;
+            };
+
+            const callAssistantFallback = async (question) => {
+                const response = await fetch('/api/assistant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, history: state.history }),
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                return {
+                    answer: data.answer || '',
+                    sources: Array.isArray(data.sources) ? data.sources : [],
+                    followups: Array.isArray(data.followups) ? data.followups : [],
+                    answer_id: data.answer_id || '',
+                };
             };
 
             const askAssistant = async (question) => {
                 if (state.busy) {
                     return;
                 }
+                if (!question || !question.trim()) {
+                    return;
+                }
+
+                removeWelcome();
                 state.busy = true;
                 submitBtn.disabled = true;
-                appendMessage('user', question, []);
+                appendUserMessage(question);
                 state.history.push({ role: 'user', content: question });
                 if (state.history.length > 12) {
                     state.history = state.history.slice(-12);
                 }
 
-                const loader = makeLoader();
-                chatLog.appendChild(loader);
-                chatLog.scrollTop = chatLog.scrollHeight;
+                const assistantUi = createAssistantMessage();
+                setAssistantText(assistantUi.body, 'Думаю', true);
 
                 try {
-                    const response = await fetch('/api/assistant', {
+                    const response = await fetch('/api/assistant/stream', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -811,26 +1115,69 @@
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
                     }
+                    if (!response.body) {
+                        throw new Error('No response body');
+                    }
 
-                    const data = await response.json();
-                    const answer = data.answer || 'Не удалось получить ответ.';
-                    const sources = Array.isArray(data.sources) ? data.sources : [];
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let buffer = '';
+                    let answer = '';
+                    let finalPayload = null;
 
-                    state.history.push({ role: 'assistant', content: answer });
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            break;
+                        }
+                        buffer += decoder.decode(value, { stream: true });
+                        const parts = buffer.split('\n\n');
+                        buffer = parts.pop() || '';
+
+                        for (const part of parts) {
+                            const line = part.split('\n').find((x) => x.startsWith('data: '));
+                            if (!line) {
+                                continue;
+                            }
+                            const payload = JSON.parse(line.slice(6));
+                            if (payload.type === 'delta') {
+                                answer += payload.delta || '';
+                                setAssistantText(assistantUi.body, answer, true);
+                            } else if (payload.type === 'final') {
+                                finalPayload = payload;
+                            } else if (payload.type === 'error') {
+                                throw new Error(payload.error || 'stream_error');
+                            }
+                        }
+                    }
+
+                    if (!finalPayload) {
+                        finalPayload = await callAssistantFallback(question);
+                    }
+
+                    const finalAnswer = (finalPayload.answer || answer || 'Не удалось получить ответ.').trim();
+                    const sources = Array.isArray(finalPayload.sources) ? finalPayload.sources : [];
+                    const followups = Array.isArray(finalPayload.followups) ? finalPayload.followups : [];
+                    const answerId = finalPayload.answer_id || '';
+
+                    state.history.push({ role: 'assistant', content: finalAnswer });
                     if (state.history.length > 12) {
                         state.history = state.history.slice(-12);
                     }
-
-                    const pending = document.getElementById('aiPendingMessage');
-                    if (pending) pending.remove();
-                    appendMessage('assistant', answer, sources);
+                    setAssistantText(assistantUi.body, finalAnswer, false);
+                    renderSources(assistantUi.meta, sources);
+                    renderFollowups(assistantUi.meta, followups);
+                    renderFeedback(assistantUi.meta, answerId, question, finalAnswer);
                 } catch (err) {
-                    const pending = document.getElementById('aiPendingMessage');
-                    if (pending) pending.remove();
-                    appendMessage('assistant', 'Не удалось обратиться к AI-сервису. Проверьте, что backend запущен и настройки API заданы.', []);
+                    setAssistantText(
+                        assistantUi.body,
+                        'Не удалось обратиться к AI-сервису. Проверьте, что backend запущен и настройки API заданы.',
+                        false
+                    );
                 } finally {
                     state.busy = false;
                     submitBtn.disabled = false;
+                    chatLog.scrollTop = chatLog.scrollHeight;
                 }
             };
 
@@ -844,9 +1191,20 @@
                     if (!q) {
                         return;
                     }
-                    openAssistant(q);
+                    runQuery(q);
                     mainPromptlineInput.value = '';
-                    askAssistant(q);
+                });
+            }
+
+            if (aiQuerySuggestions) {
+                aiQuerySuggestions.querySelectorAll('.ai-query-chip').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        const q = btn.textContent || '';
+                        if (mainPromptlineInput) {
+                            mainPromptlineInput.value = '';
+                        }
+                        runQuery(q);
+                    });
                 });
             }
 
@@ -872,6 +1230,8 @@
                     closeAssistant();
                 }
             });
+
+            renderWelcome();
         })();
     </script>
 </body>
