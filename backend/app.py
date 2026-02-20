@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import logging
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
@@ -16,6 +18,9 @@ INDEX_HTML = ROOT_DIR / "index.html"
 PORTAL_HTML = ROOT_DIR / "rutoken_portal.html"
 
 app = FastAPI(title="Rutoken Docs AI Assistant")
+logger = logging.getLogger("rutoken.rag")
+if not logger.handlers:
+    logging.basicConfig(level=logging.INFO)
 
 app.add_middleware(
     CORSMiddleware,
@@ -87,6 +92,7 @@ def assistant(payload: AssistantRequest) -> AssistantResponse:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
+        logger.exception("assistant_failed")
         raise HTTPException(status_code=500, detail=f"assistant_failed: {exc}") from exc
 
 
@@ -101,6 +107,7 @@ def assistant_stream(payload: AssistantRequest):
             ):
                 yield f"data: {json.dumps(ev, ensure_ascii=False)}\n\n"
         except Exception as exc:
+            logger.exception("assistant_stream_failed")
             err = {"type": "error", "error": f"assistant_stream_failed: {exc}"}
             yield f"data: {json.dumps(err, ensure_ascii=False)}\n\n"
 
@@ -125,4 +132,5 @@ def assistant_feedback(payload: FeedbackRequest) -> dict:
         )
         return {"ok": True}
     except Exception as exc:
+        logger.exception("feedback_failed")
         raise HTTPException(status_code=500, detail=f"feedback_failed: {exc}") from exc
